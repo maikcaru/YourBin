@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:orientation="vertical"
     tools:context="maikcaru.yourbin.MainActivity">
 
     <android.support.design.widget.AppBarLayout
@@ -21,20 +23,38 @@
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
-    <android.support.v7.widget.AppCompatSpinner
+
+    <maikcaru.yourbin.ArrowView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        android:
-
-    </android.support.v7.widget.AppCompatSpinner>
-
+        android:layout_height="0dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_weight=".05"
+        custom:flipped="true"/>
 
     <ImageView
-        android:layout_below="@+id/toolbar_layout"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/imageView"
-        android:src="@drawable/bin_animated"/>
+        android:id="@+id/slider"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_weight=".10"
+        android:src="@drawable/day_of_week_blank" />
+
+    <maikcaru.yourbin.ArrowView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_weight=".05" />
+
+    <ImageView
+        android:id="@+id/bin"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_weight=".85"
+        android:src="@drawable/bin_animated" />
 
 
-</RelativeLayout>
+</LinearLayout>
