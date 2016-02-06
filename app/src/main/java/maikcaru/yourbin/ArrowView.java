@@ -36,6 +36,8 @@ public class ArrowView extends View {
         paint.setStrokeWidth(10);
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.BLACK);
+        paint.setTextSize(60);
+        paint.setTextAlign(Paint.Align.CENTER);
     }
 
     protected void onDraw(Canvas canvas) {
@@ -45,12 +47,16 @@ public class ArrowView extends View {
         int height;
         int otherHeight;
 
+        int margin = 80;
+
         if (flipped) {
-            height = 0;
+            height = margin;
             otherHeight = canvas.getHeight();
+            canvas.drawText("Today", step, height/1.5f, paint);
         } else {
-            height = canvas.getHeight();
+            height = canvas.getHeight()-margin;
             otherHeight = 0;
+            canvas.drawText("Collection", step,canvas.getHeight(), paint);
         }
 
         Path path = new Path();
@@ -61,6 +67,7 @@ public class ArrowView extends View {
         path.lineTo(step, otherHeight);
 
         canvas.drawPath(path,paint);
+
 
 
 
