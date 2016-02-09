@@ -9,6 +9,7 @@
     tools:showIn="@layout/app_bar_main">
 
     <maikcaru.yourbin.ArrowView
+        android:id="@+id/todayArrow"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginLeft="10dp"
@@ -28,6 +29,7 @@
         android:src="@drawable/day_of_week_blank" />
 
     <maikcaru.yourbin.ArrowView
+        android:id="@+id/collectionArrow"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginLeft="10dp"

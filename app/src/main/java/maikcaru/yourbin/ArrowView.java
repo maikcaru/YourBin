@@ -87,6 +87,15 @@ public class ArrowView extends View {
     }
 
     public void setDayOfWeek(int dayOfWeek) {
+
+        if (dayOfWeek >= 2) {
+           dayOfWeek -= 2;
+        } else if (dayOfWeek == 1) {
+            dayOfWeek = 6;
+        } else if (dayOfWeek == 0) {
+            dayOfWeek = 5;
+        }
+
         this.dayOfWeek = dayOfWeek;
 
     }

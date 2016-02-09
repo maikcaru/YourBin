@@ -9,6 +9,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
 
+import java.util.Calendar;
+
 public class MainActivity extends NavigationDrawer {
 
     private ImageView vectorImage;
@@ -27,6 +29,11 @@ public class MainActivity extends NavigationDrawer {
         toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+        Calendar calendar = Calendar.getInstance();
+        ArrowView todayArrow = (ArrowView) findViewById(R.id.todayArrow);
+        todayArrow.setDayOfWeek(calendar.get(Calendar.DAY_OF_WEEK));
 
 
         vectorImage = (ImageView) findViewById(R.id.bin);
