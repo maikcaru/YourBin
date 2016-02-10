@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:layout_margin="@dimen/small_margin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/collection_day"
+        android:textSize="@dimen/large_text"/>
+
+    <android.support.v7.widget.AppCompatSpinner
+        android:layout_margin="@dimen/small_margin"
+        android:id="@+id/day_of_week_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_margin="@dimen/small_margin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/frequency"
+        android:textSize="@dimen/large_text"/>
+    <RadioGroup
+        android:layout_margin="@dimen/small_margin"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal">
+
+        <RadioButton
+            android:layout_marginStart="@dimen/small_margin"
+            android:layout_marginEnd="@dimen/small_margin"
+            android:id="@+id/radio_weekly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/weekly" />
+
+        <RadioButton
+            android:layout_marginStart="@dimen/small_margin"
+            android:layout_marginEnd="@dimen/small_margin"
+            android:id="@+id/radio_bi_weekly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bi_weekly" />
+    </RadioGroup>
+
+<TextView
+    android:layout_margin="@dimen/small_margin"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/alarm_reminder"
+    android:textSize="@dimen/large_text"
+    />
+    <TimePicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:timePickerMode="spinner"
+        android:layout_gravity="center_horizontal">
+
+    </TimePicker>
+
+</LinearLayout>
