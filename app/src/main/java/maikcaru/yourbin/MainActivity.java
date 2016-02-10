@@ -11,7 +11,7 @@ import android.widget.ImageView;
 
 import java.util.Calendar;
 
-public class MainActivity extends NavigationDrawer {
+public class MainActivity extends NavigationDrawerParent {
 
     private ImageView vectorImage;
     @Override

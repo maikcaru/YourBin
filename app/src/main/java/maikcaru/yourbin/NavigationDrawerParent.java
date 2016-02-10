@@ -11,7 +11,7 @@ import android.view.MenuItem;
 /**
  * Created by michael.carr on 09/02/16.
  */
-public class NavigationDrawer extends AppCompatActivity
+public class NavigationDrawerParent extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,11 +44,6 @@ public class NavigationDrawer extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
