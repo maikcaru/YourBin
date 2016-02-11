@@ -19,8 +19,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <include layout="@layout/content_bin_sheduler" />
+        <fragment
+            android:id="@+id/settingsFragment"
+            android:name="maikcaru.yourbin.SettingsFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
     </LinearLayout>
 
     <include layout="@layout/nav_drawer" />
+
+
 </android.support.v4.widget.DrawerLayout>
