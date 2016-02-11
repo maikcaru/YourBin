@@ -71,13 +71,14 @@ public class NavigationDrawerParent extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_status) {
-            Intent intent = new Intent(this, MainActivity.class);
+            Intent intent = new Intent(this, BinStatus.class);
             startActivity(intent);
         } else if (id == R.id.nav_schedule) {
             Intent intent = new Intent(this, BinScheduler.class);
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
-
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_help) {
 
         } else if (id == R.id.nav_about) {

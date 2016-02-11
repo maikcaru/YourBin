@@ -40,7 +40,7 @@ public class ArrowView extends View {
         paint.setStrokeWidth(10);
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.BLACK);
-        paint.setTextSize(55);
+        paint.setTextSize(70);
         paint.setTextAlign(Paint.Align.CENTER);
     }
 
@@ -87,19 +87,55 @@ public class ArrowView extends View {
     }
 
     public void setDayOfWeek(int dayOfWeek) {
-
-        if (dayOfWeek >= 2) {
-           dayOfWeek -= 2;
-        } else if (dayOfWeek == 1) {
-            dayOfWeek = 6;
-        } else if (dayOfWeek == 0) {
-            dayOfWeek = 5;
-        }
-
         this.dayOfWeek = dayOfWeek;
 
     }
 
+    /*
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
+        // Background image’s size
+        int desiredWidth = 409600;
+        int desiredHeight = 100000;
+
+        Log.e("onm", "width spec mode " + MeasureSpec.getMode(widthMeasureSpec) + " size " + MeasureSpec.getSize(widthMeasureSpec));
+        Log.e("onm", "height spec mode " + MeasureSpec.getMode(heightMeasureSpec) + " size " + MeasureSpec.getSize(heightMeasureSpec));
+
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+        // Final size
+        int width, height;
+
+        // Set width depending on mode
+        if(widthMode == MeasureSpec.EXACTLY) {
+            width = widthSize;
+        }
+        else if(widthMode == MeasureSpec.AT_MOST) {
+            width = Math.min(desiredWidth, widthSize);
+        }
+        else {
+            width = desiredWidth;
+        }
+
+        // Set height depending on mode
+        if(heightMode == MeasureSpec.EXACTLY) {
+            height = heightSize;
+        }
+        else if(heightMode == MeasureSpec.AT_MOST) {
+            height = Math.min(desiredHeight, heightSize);
+        }
+        else {
+            height = desiredHeight;
+        }
+
+        // Finally, set dimension
+        Log.e("onm", "smd " + width + " " + height);
+        setMeasuredDimension(width, height);
+    }
+*/
 }
 

@@ -3,9 +3,13 @@ package maikcaru.yourbin;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -15,32 +19,55 @@ import java.util.Calendar;
 
 public class BinScheduler extends NavigationDrawerParent {
 
+    SharedPreferences prefs;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bin_scheduler);
         createToolbar();
 
-        Object[][] objects = new Object[2][2];
-
-        objects[0][0] = R.id.day_of_week_spinner;
-        objects[0][1] = R.array.days_array;
-        objects[1][0] = R.id.frequency_spinner;
-        objects[1][1] = R.array.frequency_array;
+        prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
 
 
-        Spinner daysSpinner = (Spinner) findViewById(R.id.day_of_week_spinner);
-        ArrayAdapter<CharSequence> daysAdapter = ArrayAdapter.createFromResource(this,
-                R.array.days_array, android.R.layout.simple_spinner_item);
-        daysAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        daysSpinner.setAdapter(daysAdapter);
+        //Add spinners and spinner values to array
+        int[][] IDs = new int[2][2];
+        IDs[0][0] = R.id.day_of_week_spinner;
+        IDs[0][1] = R.array.days_array;
+        IDs[1][0] = R.id.frequency_spinner;
+        IDs[1][1] = R.array.frequency_array;
+
+        //Loop twice to add both spinners using IDs array.
+        //J is incremented in the loop in order to access the other variable.
+        for (int i = 0; i < IDs.length; i++) {
+            int j = 0;
+            Spinner spinner = (Spinner) findViewById(IDs[i][j]);
+            j++;
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                    IDs[i][j], android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinner.setAdapter(adapter);
+        }
+
+        final Spinner daySpinner = (Spinner) findViewById(IDs[0][0]);
+
+        daySpinner.setSelection(prefs.getInt("dayOfWeek", -1));
 
 
-        Spinner freqSpinner = (Spinner) findViewById(R.id.frequency_spinner);
-        ArrayAdapter<CharSequence> freqAdapter = ArrayAdapter.createFromResource(this,
-                R.array.frequency_array, android.R.layout.simple_spinner_item);
-        freqAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        freqSpinner.setAdapter(freqAdapter);
+        daySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                prefs.edit().putInt("dayOfWeek", position).apply();
+                Log.e("Shared Prefs", "" + prefs.getInt("dayOfWeek", -1));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
 
         TextView reminderTime = (TextView) findViewById(R.id.textReminderTime);
         reminderTime.setOnClickListener(new View.OnClickListener() {
