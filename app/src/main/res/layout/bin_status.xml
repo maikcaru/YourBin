@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="maikcaru.yourbin.MainActivity"
     android:orientation="vertical"
-    tools:showIn="@layout/app_bar_main">
+    tools:showIn="@layout/toolbar">
 
     <maikcaru.yourbin.ArrowView
         android:id="@+id/todayArrow"

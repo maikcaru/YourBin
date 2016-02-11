@@ -31,10 +31,20 @@
         <item>Sunday</item>
     </string-array>
 
-    <string name="collection_day">"Collection Day:</string>
-    <string name="frequency">Collection Frequency</string>
+    <string-array name="frequency_array">
+        <item>Weekly</item>
+        <item>Bi-Weekly</item>
+
+    </string-array>
+
+    <string name="collection">Collection Details</string>
+    <string name="day">Day</string>
+    <string name="frequency">Frequency</string>
     <string name="weekly">Weekly</string>
     <string name="bi_weekly">Bi-weekly</string>
-    <string name="alarm_reminder">Previous Day Reminder Time</string>
+    <string name="alarm_reminder">Reminder</string>
+    <string name="time">Time</string>
+    <string name="repeat">Repeat</string>
+
 
 </resources>
