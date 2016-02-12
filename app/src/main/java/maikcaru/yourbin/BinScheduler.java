@@ -7,11 +7,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
@@ -50,16 +51,11 @@ public class BinScheduler extends NavigationDrawerParent {
         }
 
         final Spinner daySpinner = (Spinner) findViewById(IDs[0][0]);
-
         daySpinner.setSelection(prefs.getInt("dayOfWeek", -1));
-
-
         daySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
                 prefs.edit().putInt("dayOfWeek", position).apply();
-                Log.e("Shared Prefs", "" + prefs.getInt("dayOfWeek", -1));
             }
 
             @Override
@@ -69,8 +65,33 @@ public class BinScheduler extends NavigationDrawerParent {
         });
 
 
-        TextView reminderTime = (TextView) findViewById(R.id.textReminderTime);
-        reminderTime.setOnClickListener(new View.OnClickListener() {
+        final Spinner frequencySpinner = (Spinner) findViewById(IDs[1][0]);
+        frequencySpinner.setSelection(prefs.getInt("frequency", -1));
+        frequencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                prefs.edit().putInt("frequency", position).apply();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        final Switch repeatSwitch = (Switch) findViewById(R.id.repeatSwitch);
+        repeatSwitch.setChecked(prefs.getBoolean("repeat", false));
+        repeatSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putBoolean("repeat", isChecked).apply();
+            }
+        });
+
+
+        TextView tvReminderTime = (TextView) findViewById(R.id.textReminderTime);
+        tvReminderTime.setText(prefs.getString("reminderTime", "10:00 pm"));
+        tvReminderTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 DialogFragment timePickerFragment = new TimePickerFragment();
@@ -82,7 +103,7 @@ public class BinScheduler extends NavigationDrawerParent {
     }
 
 
-    public static class TimePickerFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
+    public class TimePickerFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -100,15 +121,13 @@ public class BinScheduler extends NavigationDrawerParent {
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             //Do something with the user chosen time
             //Get reference of host activity (XML Layout File) TextView widget
-            String halfOfDay = "am";
-            TextView reminderTime = (TextView) getActivity().findViewById(R.id.textReminderTime);
 
-            if (hourOfDay > 12) {
-                hourOfDay %= 12;
-                halfOfDay = "pm";
-            }
+            TextView tvReminderTime = (TextView) getActivity().findViewById(R.id.textReminderTime);
+            prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
 
-            reminderTime.setText(String.valueOf(hourOfDay) + ":" + String.valueOf(minute) + " " + halfOfDay);
+            String time = String.format("%02d", hourOfDay) + ":" + String.format("%02d", minute);
+            prefs.edit().putString("reminderTime", time).apply();
+            tvReminderTime.setText(prefs.getString("reminderTime", "10:00 pm"));
         }
     }
 }
