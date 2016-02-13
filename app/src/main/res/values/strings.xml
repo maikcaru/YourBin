@@ -49,4 +49,17 @@
     <string name="title_activity_settings">Settings</string>
     <string name="bin_description">Bin with fill level</string>
 
+    <string-array name="fill_array">
+        <item>10% Full</item>
+        <item>20% Full</item>
+        <item>30% Full</item>
+        <item>40% Full</item>
+        <item>50% Full</item>
+        <item>60% Full</item>
+        <item>70% Full</item>
+        <item>80% Full</item>
+        <item>90% Full</item>
+        <item>100% Full</item>
+    </string-array>
+
 </resources>

@@ -4,8 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Animatable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.Calendar;
 
@@ -20,6 +22,8 @@ public class BinStatus extends NavigationDrawerParent {
 
         ArrowView todayArrow = (ArrowView) findViewById(R.id.todayArrow);
         int dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+
+        //Convert Android day of week numbering convention to my own
         if (dayOfWeek > 1) {
             dayOfWeek -= 2;
         } else {
@@ -27,15 +31,22 @@ public class BinStatus extends NavigationDrawerParent {
         }
         todayArrow.setDayOfWeek(dayOfWeek);
 
-        ArrowView collectoinArrow = (ArrowView) findViewById(R.id.collectionArrow);
+        ArrowView collectionArrow = (ArrowView) findViewById(R.id.collectionArrow);
         SharedPreferences prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
-        collectoinArrow.setDayOfWeek(prefs.getInt("dayOfWeek", 11));
+        collectionArrow.setDayOfWeek(prefs.getInt("dayOfWeek", 0));
 
 
-
+        //Animate the bin
         vectorImage = (ImageView) findViewById(R.id.bin);
-        vectorImage.setImageResource(R.drawable.bin_animated_70);
 
+        //Hard-coded to 70%, needs to be sourced from hub
+        vectorImage.setImageResource(R.drawable.bin_animated_70);
+        ((Animatable) vectorImage.getDrawable()).start();
+        TextView textViewFillLevel = (TextView) findViewById(R.id.textFillLevel);
+        String[] fillLevels = getResources().getStringArray(R.array.fill_array);
+        textViewFillLevel.setText(fillLevels[6]);
+
+        //Animate on click
         vectorImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
