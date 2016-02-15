@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 /**
  * Created by michael.carr on 09/02/16.
@@ -19,6 +20,8 @@ public class NavigationDrawerParent extends AppCompatActivity
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
     }
 
     protected void createToolbar() {
@@ -33,6 +36,12 @@ public class NavigationDrawerParent extends AppCompatActivity
         toggle.syncState();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        TextView tvName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.UserName);
+        tvName.setText(getIntent().getStringExtra("Name"));
+
+        TextView tvEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.UserEmail);
+        tvEmail.setText(getIntent().getStringExtra("Email"));
 
 
     }
@@ -72,12 +81,15 @@ public class NavigationDrawerParent extends AppCompatActivity
 
         if (id == R.id.nav_status) {
             Intent intent = new Intent(this, BinStatus.class);
+            intent.putExtras(getIntent().getExtras());
             startActivity(intent);
         } else if (id == R.id.nav_schedule) {
             Intent intent = new Intent(this, BinScheduler.class);
+            intent.putExtras(getIntent().getExtras());
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
+            intent.putExtras(getIntent().getExtras());
             startActivity(intent);
         } else if (id == R.id.nav_help) {
 

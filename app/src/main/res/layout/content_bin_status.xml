@@ -19,9 +19,6 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <!--android:paddingLeft="@dimen/small_margin"-->
-            <!--android:paddingRight="@dimen/small_margin"-->
-
 
             <maikcaru.yourbin.ArrowView
                 android:id="@+id/todayArrow"

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Animatable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -34,7 +33,6 @@ public class BinStatus extends NavigationDrawerParent {
         ArrowView collectionArrow = (ArrowView) findViewById(R.id.collectionArrow);
         SharedPreferences prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
         collectionArrow.setDayOfWeek(prefs.getInt("dayOfWeek", 0));
-
 
         //Animate the bin
         vectorImage = (ImageView) findViewById(R.id.bin);
