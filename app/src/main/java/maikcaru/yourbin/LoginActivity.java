@@ -33,6 +33,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -278,7 +280,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mEmailView.setAdapter(adapter);
     }
 
-
     private interface ProfileQuery {
         String[] PROJECTION = {
                 ContactsContract.CommonDataKinds.Email.ADDRESS,
@@ -308,15 +309,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected Boolean doInBackground(Void... params) {
             String inputLine;
 
-
             try {
-                myURL = new URL("http://cs-web.yorksj.ac.uk/~michael.carr/Project/login.php" + "?Email=" + mEmail + "&Password=" + mPassword);
+                Log.e("Hashed password",computeMD5Hash());
+                myURL = new URL("http://cs-web.yorksj.ac.uk/~michael.carr/Project/login.php" + "?Email=" + mEmail + "&Password=" + computeMD5Hash());
                 URLConnection myURLConnection = myURL.openConnection();
                 myURLConnection.connect();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
 
             try {
                 in = new BufferedReader(new InputStreamReader(myURL.openStream()));
@@ -363,6 +363,31 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
+        }
+
+        public String computeMD5Hash(){
+            try {
+                // Create MD5 Hash
+                MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+                digest.update(mPassword.getBytes());
+                byte messageDigest[] = digest.digest();
+
+                StringBuffer MD5Hash = new StringBuffer();
+                for (int i = 0; i < messageDigest.length; i++)
+                {
+                    String h = Integer.toHexString(0xFF & messageDigest[i]);
+                    while (h.length() < 2)
+                        h = "0" + h;
+                    MD5Hash.append(h);
+                }
+
+                return MD5Hash.toString();
+            }
+            catch (NoSuchAlgorithmException e)
+            {
+                e.printStackTrace();
+            }
+            return "false";
         }
     }
 }
