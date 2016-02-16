@@ -1,6 +1,8 @@
 package maikcaru.yourbin;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -37,11 +39,12 @@ public class NavigationDrawerParent extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        SharedPreferences prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
         TextView tvName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.UserName);
-        tvName.setText(getIntent().getStringExtra("Name"));
+        tvName.setText(prefs.getString("name", "YourName"));
 
         TextView tvEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.UserEmail);
-        tvEmail.setText(getIntent().getStringExtra("Email"));
+        tvEmail.setText(prefs.getString("email", "YourEmail"));
 
 
     }
@@ -81,15 +84,15 @@ public class NavigationDrawerParent extends AppCompatActivity
 
         if (id == R.id.nav_status) {
             Intent intent = new Intent(this, BinStatus.class);
-            intent.putExtras(getIntent().getExtras());
+            //intent.putExtras(getIntent().getExtras());
             startActivity(intent);
         } else if (id == R.id.nav_schedule) {
             Intent intent = new Intent(this, BinScheduler.class);
-            intent.putExtras(getIntent().getExtras());
+            //intent.putExtras(getIntent().getExtras());
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
-            intent.putExtras(getIntent().getExtras());
+            //intent.putExtras(getIntent().getExtras());
             startActivity(intent);
         } else if (id == R.id.nav_help) {
 

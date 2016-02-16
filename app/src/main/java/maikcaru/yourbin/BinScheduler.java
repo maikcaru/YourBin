@@ -35,7 +35,7 @@ public class BinScheduler extends NavigationDrawerParent {
         createToolbar();
 
         prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
-        Log.e("Preferences", prefs.getAll() + "");
+
         //Add spinners and spinner values to array
         int[][] IDs = new int[2][2];
         IDs[0][0] = R.id.day_of_week_spinner;

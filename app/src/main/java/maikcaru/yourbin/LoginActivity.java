@@ -4,9 +4,11 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -58,18 +60,15 @@ import static android.Manifest.permission.READ_CONTACTS;
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
-    /**
-     * Id to identity READ_CONTACTS permission request.
-     */
+    //Id to identity READ_CONTACTS permission request.
+
     private static final int REQUEST_READ_CONTACTS = 0;
-
-
     private BufferedReader in = null;
     private URL myURL = null;
 
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
+
+    //Keep track of the login task to ensure we can cancel it if requested.
+
     private UserLoginTask mAuthTask = null;
 
     // UI references.
@@ -77,9 +76,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-    private LoginButton mFacebookButton;
 
     CallbackManager callbackManager;
+    SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +87,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         setContentView(R.layout.activity_login);
 
         if (isLoggedIn()) {
-
+            Intent intent = new Intent(LoginActivity.this, BinStatus.class);
+            startActivity(intent);
         }
 
 
@@ -119,7 +119,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        mFacebookButton = (LoginButton) findViewById(R.id.login_button);
+        LoginButton mFacebookButton = (LoginButton) findViewById(R.id.login_button);
         callbackManager = CallbackManager.Factory.create();
         mFacebookButton.registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
@@ -130,8 +130,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 loginResult.getAccessToken(),
                                 new GraphRequest.GraphJSONObjectCallback() {
                                     @Override
-                                    public void onCompleted(JSONObject object,
-                                                            GraphResponse response) {
+                                    public void onCompleted(JSONObject object, GraphResponse response) {
 
                                         String name = null;
                                         String email = null;
@@ -139,20 +138,22 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                             name = response.getJSONObject().getString("name");
                                             email = response.getJSONObject().getString("email");
 
+                                            prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
+                                            prefs.edit().putString("name", name).apply();
+                                            prefs.edit().putString("email", email).apply();
+
                                         } catch (JSONException e) {
                                             e.printStackTrace();
                                         }
 
                                         Intent intent = new Intent(LoginActivity.this, BinStatus.class);
-                                        intent.putExtra("Name", name);
-                                        intent.putExtra("Email", email);
                                         startActivity(intent);
                                     }
                                 }
 
                         );
                         Bundle parameters = new Bundle();
-                        parameters.putString("fields", "id,name,email,gender, birthday");
+                        parameters.putString("fields", "name,email");
                         request.setParameters(parameters);
                         request.executeAsync();
                     }
@@ -164,7 +165,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                     @Override
                     public void onError(FacebookException exception) {
-                        // App code
+                        Log.e("On error exception", exception.toString());
                     }
                 }
 
@@ -395,7 +396,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             String inputLine;
 
             try {
-                Log.e("Hashed password", computeMD5Hash());
                 myURL = new URL("http://cs-web.yorksj.ac.uk/~michael.carr/Project/login.php" + "?Email=" + mEmail + "&Password=" + computeMD5Hash());
                 URLConnection myURLConnection = myURL.openConnection();
                 myURLConnection.connect();
@@ -415,15 +415,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     mName = in.readLine();
                     return true;
                 } else if (inputLine.equals("incorrect")) {
-                    Log.e("Incorrect", "login attempt");
                     return false;
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            // TODO: register the new account here.
             return false;
         }
 
