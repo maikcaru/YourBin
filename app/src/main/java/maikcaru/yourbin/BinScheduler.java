@@ -6,6 +6,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
@@ -34,6 +35,7 @@ public class BinScheduler extends NavigationDrawerParent {
         createToolbar();
 
         prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
+        Log.e("Preferences", prefs.getAll() + "");
         //Add spinners and spinner values to array
         int[][] IDs = new int[2][2];
         IDs[0][0] = R.id.day_of_week_spinner;
@@ -111,9 +113,14 @@ public class BinScheduler extends NavigationDrawerParent {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             //Use the current time as the default values for the time picker
+            String defaultTime = prefs.getString("reminderTime", "22:00");
+            String[] timeValues = defaultTime.split(":", 2);
+            Log.e("Hour", timeValues[0]);
+            Log.e("Minute", timeValues[1]);
             final Calendar c = Calendar.getInstance();
             int hour = c.get(Calendar.HOUR_OF_DAY);
             int minute = c.get(Calendar.MINUTE);
+
 
             //Create and return a new instance of TimePickerDialog
             return new TimePickerDialog(getActivity(), this, hour, minute,
@@ -126,19 +133,21 @@ public class BinScheduler extends NavigationDrawerParent {
             //Get reference of host activity (XML Layout File) TextView widget
 
             TextView tvReminderTime = (TextView) getActivity().findViewById(R.id.textReminderTime);
-            prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
+            SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
             String time = String.format("%02d", hourOfDay) + ":" + String.format("%02d", minute);
 
-            try {
-                SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
-                SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
-                Date _24HourDt = _24HourSDF.parse(time);
-                Log.e("12 hour time:", _12HourSDF.format(_24HourDt));
-            } catch (ParseException e) {
-                e.printStackTrace();
-
+            if (!defaultPrefs.getBoolean("timeFormat", true)) {
+                try {
+                    SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
+                    SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
+                    Date _24HourDt = _24HourSDF.parse(time);
+                    time = _12HourSDF.format(_24HourDt);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
+
             prefs.edit().putString("reminderTime", time).apply();
 
             tvReminderTime.setText(prefs.getString("reminderTime", "10:00 pm"));

@@ -9,5 +9,4 @@
         android:key="logout"
         android:title="Logout" />
 
-
 </PreferenceScreen>

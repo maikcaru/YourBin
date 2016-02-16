@@ -8,7 +8,6 @@ public class SettingsActivity extends NavigationDrawerParent {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         createToolbar();
-
     }
 
 }

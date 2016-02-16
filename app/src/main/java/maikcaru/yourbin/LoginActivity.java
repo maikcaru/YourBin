@@ -29,13 +29,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
-import com.facebook.Profile;
-import com.facebook.login.LoginManager;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -44,7 +49,6 @@ import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -73,7 +77,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-    private Button mFacebookButton;
+    private LoginButton mFacebookButton;
 
     CallbackManager callbackManager;
 
@@ -82,6 +86,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(this.getApplicationContext());
         setContentView(R.layout.activity_login);
+
+        if (isLoggedIn()) {
+
+        }
+
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -110,30 +119,42 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        mFacebookButton = (Button) findViewById(R.id.login_button);
-        mFacebookButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LoginManager.getInstance().logInWithReadPermissions(LoginActivity.this, Arrays.asList("public_profile, email"));
-                Profile profile = Profile.getCurrentProfile();
-                String name = profile.getName();
-                String email = "email address";
-//                Intent intent = new Intent(LoginActivity.this, BinStatus.class);
-//                intent.putExtra("Name", name);
-//                intent.putExtra("Email", email);
-//                startActivity(intent);
-
-            }
-        });
-
-
+        mFacebookButton = (LoginButton) findViewById(R.id.login_button);
         callbackManager = CallbackManager.Factory.create();
-
-        LoginManager.getInstance().registerCallback(callbackManager,
+        mFacebookButton.registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
-                        // App code
+
+                        GraphRequest request = GraphRequest.newMeRequest(
+                                loginResult.getAccessToken(),
+                                new GraphRequest.GraphJSONObjectCallback() {
+                                    @Override
+                                    public void onCompleted(JSONObject object,
+                                                            GraphResponse response) {
+
+                                        String name = null;
+                                        String email = null;
+                                        try {
+                                            name = response.getJSONObject().getString("name");
+                                            email = response.getJSONObject().getString("email");
+
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        Intent intent = new Intent(LoginActivity.this, BinStatus.class);
+                                        intent.putExtra("Name", name);
+                                        intent.putExtra("Email", email);
+                                        startActivity(intent);
+                                    }
+                                }
+
+                        );
+                        Bundle parameters = new Bundle();
+                        parameters.putString("fields", "id,name,email,gender, birthday");
+                        request.setParameters(parameters);
+                        request.executeAsync();
                     }
 
                     @Override
@@ -145,7 +166,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     public void onError(FacebookException exception) {
                         // App code
                     }
-                });
+                }
+
+        );
 
     }
 
@@ -155,11 +178,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
+    public boolean isLoggedIn() {
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        return accessToken != null;
+    }
+
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
             return;
         }
-
         getLoaderManager().initLoader(0, null, this);
     }
 
@@ -368,7 +395,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             String inputLine;
 
             try {
-                Log.e("Hashed password",computeMD5Hash());
+                Log.e("Hashed password", computeMD5Hash());
                 myURL = new URL("http://cs-web.yorksj.ac.uk/~michael.carr/Project/login.php" + "?Email=" + mEmail + "&Password=" + computeMD5Hash());
                 URLConnection myURLConnection = myURL.openConnection();
                 myURLConnection.connect();
@@ -423,7 +450,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
         }
 
-        public String computeMD5Hash(){
+        public String computeMD5Hash() {
             try {
                 // Create MD5 Hash
                 MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
@@ -431,8 +458,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 byte messageDigest[] = digest.digest();
 
                 StringBuffer MD5Hash = new StringBuffer();
-                for (int i = 0; i < messageDigest.length; i++)
-                {
+                for (int i = 0; i < messageDigest.length; i++) {
                     String h = Integer.toHexString(0xFF & messageDigest[i]);
                     while (h.length() < 2)
                         h = "0" + h;
@@ -440,9 +466,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 }
 
                 return MD5Hash.toString();
-            }
-            catch (NoSuchAlgorithmException e)
-            {
+            } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             }
             return "false";
