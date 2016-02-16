@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <EditTextPreference
-        android:key="username"
-        android:summary="Please provide your username"
-        android:title="Your Name" />
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="applicationUpdates"
-        android:summary="This option if selected will allow the application to check for latest versions."
-        android:title="Application Updates" />
+    <SwitchPreference
+        android:key="timeFormat"
+        android:title="Use 24 hr time format" />
 
     <Preference
         android:key="logout"
         android:title="Logout" />
+
 
 </PreferenceScreen>

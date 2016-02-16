@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,7 +17,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class BinScheduler extends NavigationDrawerParent {
 
@@ -29,8 +34,6 @@ public class BinScheduler extends NavigationDrawerParent {
         createToolbar();
 
         prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
-
-
         //Add spinners and spinner values to array
         int[][] IDs = new int[2][2];
         IDs[0][0] = R.id.day_of_week_spinner;
@@ -126,7 +129,18 @@ public class BinScheduler extends NavigationDrawerParent {
             prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
 
             String time = String.format("%02d", hourOfDay) + ":" + String.format("%02d", minute);
+
+            try {
+                SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
+                SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
+                Date _24HourDt = _24HourSDF.parse(time);
+                Log.e("12 hour time:", _12HourSDF.format(_24HourDt));
+            } catch (ParseException e) {
+                e.printStackTrace();
+
+            }
             prefs.edit().putString("reminderTime", time).apply();
+
             tvReminderTime.setText(prefs.getString("reminderTime", "10:00 pm"));
         }
     }
