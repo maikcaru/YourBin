@@ -28,7 +28,7 @@ public class BinStatus extends NavigationDrawerParent {
 
         Intent notificationIntent = new Intent(this, NotificationPublisher.class);
         notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, getNotification());
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, buildNotification());
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         long futureInMillis = SystemClock.elapsedRealtime() + 2000;
@@ -72,7 +72,7 @@ public class BinStatus extends NavigationDrawerParent {
 
     }
 
-    private Notification getNotification() {
+    private Notification buildNotification() {
         Notification notification = new NotificationCompat.Builder(BinStatus.this)
                 .setContentTitle("YourBin Reminder")
                 .setContentText("Move YourBin to it's collection point. ")

@@ -3,9 +3,11 @@ package maikcaru.yourbin;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
@@ -19,6 +21,7 @@ import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -72,11 +75,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private BufferedReader in = null;
     private URL myURL = null;
     private UserLoginTask mAuthTask = null;
+    private UserRegisterTask mRegTask = null;
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+
+    private String name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +120,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 attemptLogin();
             }
         });
+
+        Button mRegisterButton = (Button) findViewById(R.id.email_register_in_button);
+        mRegisterButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                attemptRegister();
+            }
+        });
+
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
@@ -234,6 +249,79 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
+    private void attemptRegister() {
+        if (mRegTask != null) {
+            return;
+        }
+
+        // Reset errors.
+        mEmailView.setError(null);
+        mPasswordView.setError(null);
+
+        // Store values at the time of the login attempt.
+        String email = mEmailView.getText().toString();
+        String password = mPasswordView.getText().toString();
+
+
+        boolean cancel = false;
+        View focusView = null;
+
+        // Check for a valid password, if the user entered one.
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+            mPasswordView.setError(getString(R.string.error_invalid_password));
+            focusView = mPasswordView;
+            cancel = true;
+        }
+
+        // Check for a valid email address.
+        if (TextUtils.isEmpty(email)) {
+            mEmailView.setError(getString(R.string.error_field_required));
+            focusView = mEmailView;
+            cancel = true;
+        } else if (!isEmailValid(email)) {
+            mEmailView.setError(getString(R.string.error_invalid_email));
+            focusView = mEmailView;
+            cancel = true;
+        }
+
+        if (cancel) {
+            // There was an error; don't attempt login and focus the first
+            // form field with an error.
+            focusView.requestFocus();
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Please Enter Your Name");
+
+            // Set up the input
+            final EditText input = new EditText(this);
+            // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+            builder.setView(input);
+
+            // Set up the buttons
+            builder.setPositiveButton("Register", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    name = input.getText().toString();
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+
+            builder.show();
+
+            // Show a progress spinner, and kick off a background task to
+            // perform the user login attempt.
+            showProgress(true);
+            mRegTask = new UserRegisterTask(email, password, name);
+            mRegTask.execute((Void) null);
+        }
+    }
+
     private void attemptLogin() {
         if (mAuthTask != null) {
             return;
@@ -280,6 +368,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mAuthTask.execute((Void) null);
         }
     }
+
 
     private boolean isEmailValid(String email) {
         return email.contains("@");
@@ -368,6 +457,28 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mEmailView.setAdapter(adapter);
     }
 
+    public String computeMD5Hash(String mPassword) {
+        try {
+            // Create MD5 Hash
+            MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+            digest.update(mPassword.getBytes());
+            byte messageDigest[] = digest.digest();
+
+            StringBuffer MD5Hash = new StringBuffer();
+            for (int i = 0; i < messageDigest.length; i++) {
+                String h = Integer.toHexString(0xFF & messageDigest[i]);
+                while (h.length() < 2)
+                    h = "0" + h;
+                MD5Hash.append(h);
+            }
+
+            return MD5Hash.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "false";
+    }
+
     private interface ProfileQuery {
         String[] PROJECTION = {
                 ContactsContract.CommonDataKinds.Email.ADDRESS,
@@ -398,7 +509,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             String inputLine;
 
             try {
-                myURL = new URL("http://cs-web.yorksj.ac.uk/~michael.carr/Project/login.php" + "?Email=" + mEmail + "&Password=" + computeMD5Hash());
+                myURL = new URL("http://cs-web.yorksj.ac.uk/~michael.carr/Project/login.php" + "?Email=" + mEmail + "&Password=" + computeMD5Hash(mPassword));
                 URLConnection myURLConnection = myURL.openConnection();
                 myURLConnection.connect();
             } catch (Exception e) {
@@ -449,27 +560,76 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
         }
 
-        public String computeMD5Hash() {
+
+    }
+
+    public class UserRegisterTask extends AsyncTask<Void, Void, Boolean> {
+
+        private final String mEmail;
+        private final String mPassword;
+        private String mName = "";
+
+        UserRegisterTask(String email, String password, String name) {
+            mEmail = email;
+            mPassword = password;
+            mName = name;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            String inputLine;
+
             try {
-                // Create MD5 Hash
-                MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
-                digest.update(mPassword.getBytes());
-                byte messageDigest[] = digest.digest();
-
-                StringBuffer MD5Hash = new StringBuffer();
-                for (int i = 0; i < messageDigest.length; i++) {
-                    String h = Integer.toHexString(0xFF & messageDigest[i]);
-                    while (h.length() < 2)
-                        h = "0" + h;
-                    MD5Hash.append(h);
-                }
-
-                return MD5Hash.toString();
-            } catch (NoSuchAlgorithmException e) {
+                myURL = new URL("http://cs-web.yorksj.ac.uk/~michael.carr/Project/register.php" + "?Email=" + mEmail + "&Password=" + computeMD5Hash(mPassword) + "&Name=" + name);
+                URLConnection myURLConnection = myURL.openConnection();
+                myURLConnection.connect();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            return "false";
+
+            try {
+                in = new BufferedReader(new InputStreamReader(myURL.openStream()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                inputLine = in.readLine();
+                if (inputLine.equals("correct")) {
+                    return true;
+                } else if (inputLine.equals("incorrect")) {
+                    return false;
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return false;
         }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mAuthTask = null;
+            showProgress(false);
+
+//            if (success) {
+//                Intent intent = new Intent(LoginActivity.this, BinStatus.class);
+//                intent.putExtra("Name", mName);
+//                intent.putExtra("Email", mEmail);
+//                startActivity(intent);
+//                finish();
+//            } else {
+//                mPasswordView.setError(getString(R.string.error_incorrect_password));
+//                mPasswordView.requestFocus();
+//            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mAuthTask = null;
+            showProgress(false);
+        }
+
 
     }
 }
