@@ -9,9 +9,7 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.View;
 
-/**
- * Created by michael.carr on 05/02/16.
- */
+
 public class ArrowView extends View {
 
     private Paint paint;
@@ -91,51 +89,5 @@ public class ArrowView extends View {
 
     }
 
-    /*
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-
-        // Background image’s size
-        int desiredWidth = 409600;
-        int desiredHeight = 100000;
-
-        Log.e("onm", "width spec mode " + MeasureSpec.getMode(widthMeasureSpec) + " size " + MeasureSpec.getSize(widthMeasureSpec));
-        Log.e("onm", "height spec mode " + MeasureSpec.getMode(heightMeasureSpec) + " size " + MeasureSpec.getSize(heightMeasureSpec));
-
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-
-        // Final size
-        int width, height;
-
-        // Set width depending on mode
-        if(widthMode == MeasureSpec.EXACTLY) {
-            width = widthSize;
-        }
-        else if(widthMode == MeasureSpec.AT_MOST) {
-            width = Math.min(desiredWidth, widthSize);
-        }
-        else {
-            width = desiredWidth;
-        }
-
-        // Set height depending on mode
-        if(heightMode == MeasureSpec.EXACTLY) {
-            height = heightSize;
-        }
-        else if(heightMode == MeasureSpec.AT_MOST) {
-            height = Math.min(desiredHeight, heightSize);
-        }
-        else {
-            height = desiredHeight;
-        }
-
-        // Finally, set dimension
-        Log.e("onm", "smd " + width + " " + height);
-        setMeasuredDimension(width, height);
-    }
-*/
 }
 

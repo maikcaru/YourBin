@@ -26,10 +26,7 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.net.URL;
 
-/**
- * Created by michael.carr on 09/02/16.
- */
-public class NavigationDrawerParent extends AppCompatActivity
+public abstract class NavigationDrawerParent extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     protected void onCreate(Bundle savedInstanceState) {

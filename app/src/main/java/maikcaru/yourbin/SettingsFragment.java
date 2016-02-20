@@ -7,9 +7,7 @@ import android.preference.PreferenceFragment;
 
 import com.facebook.login.LoginManager;
 
-/**
- * Created by michael.carr on 11/02/16.
- */
+
 public class SettingsFragment extends PreferenceFragment {
 
     @Override
@@ -33,5 +31,7 @@ public class SettingsFragment extends PreferenceFragment {
                 return true;
             }
         });
+
     }
 }
+

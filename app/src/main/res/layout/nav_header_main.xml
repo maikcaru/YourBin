@@ -24,7 +24,7 @@
         android:id="@+id/tvUserName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:paddingTop="@dimen/small_margin"
         android:text="Your Name"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 

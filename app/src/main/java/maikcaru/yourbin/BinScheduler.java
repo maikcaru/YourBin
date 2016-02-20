@@ -6,7 +6,6 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
@@ -45,12 +44,12 @@ public class BinScheduler extends NavigationDrawerParent {
 
         //Loop twice to add both spinners using IDs array.
         //J is incremented in the loop in order to access the other variable.
-        for (int i = 0; i < IDs.length; i++) {
+        for (int[] ID : IDs) {
             int j = 0;
-            Spinner spinner = (Spinner) findViewById(IDs[i][j]);
+            Spinner spinner = (Spinner) findViewById(ID[j]);
             j++;
             ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                    IDs[i][j], android.R.layout.simple_spinner_item);
+                    ID[j], android.R.layout.simple_spinner_item);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinner.setAdapter(adapter);
         }
@@ -95,7 +94,9 @@ public class BinScheduler extends NavigationDrawerParent {
 
 
         TextView tvReminderTime = (TextView) findViewById(R.id.textReminderTime);
-        tvReminderTime.setText(prefs.getString("reminderTime", "10:00 pm"));
+        String time = String.format("%02d", prefs.getInt("hour", 22)) + ":" + String.format("%02d", prefs.getInt("minute", 00));
+        time = get12HourTime(time);
+        tvReminderTime.setText(time);
         tvReminderTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -113,15 +114,9 @@ public class BinScheduler extends NavigationDrawerParent {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             //Use the current time as the default values for the time picker
-            String defaultTime = prefs.getString("reminderTime", "22:00");
-            String[] timeValues = defaultTime.split(":", 2);
-            Log.e("Hour", timeValues[0]);
-            Log.e("Minute", timeValues[1]);
             final Calendar c = Calendar.getInstance();
-            int hour = c.get(Calendar.HOUR_OF_DAY);
-            int minute = c.get(Calendar.MINUTE);
-
-
+            int hour = prefs.getInt("hour", 22);
+            int minute = prefs.getInt("minute", 00);
             //Create and return a new instance of TimePickerDialog
             return new TimePickerDialog(getActivity(), this, hour, minute,
                     DateFormat.is24HourFormat(getActivity()));
@@ -133,24 +128,35 @@ public class BinScheduler extends NavigationDrawerParent {
             //Get reference of host activity (XML Layout File) TextView widget
 
             TextView tvReminderTime = (TextView) getActivity().findViewById(R.id.textReminderTime);
-            SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
             String time = String.format("%02d", hourOfDay) + ":" + String.format("%02d", minute);
+            time = get12HourTime(time);
 
-            if (!defaultPrefs.getBoolean("timeFormat", true)) {
-                try {
-                    SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
-                    SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
-                    Date _24HourDt = _24HourSDF.parse(time);
-                    time = _12HourSDF.format(_24HourDt);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            prefs.edit().putString("reminderTime", time).apply();
-
-            tvReminderTime.setText(prefs.getString("reminderTime", "10:00 pm"));
+            prefs.edit().putInt("hour", hourOfDay).apply();
+            prefs.edit().putInt("minute", minute).apply();
+            prefs.edit().putString("reminderTimeString", time).apply();
+            tvReminderTime.setText(time);
         }
+
     }
+
+    public String get12HourTime(String time) {
+
+        if (!DateFormat.is24HourFormat(this)) {
+            try {
+                SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
+                Log.e("24 SDF", _24HourSDF.toLocalizedPattern());
+                SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
+                Log.e("12 SDF", _12HourSDF.toLocalizedPattern());
+                Date _24HourDt = _24HourSDF.parse(time);
+                Log.e("24 DT", _24HourDt.toString());
+                time = _12HourSDF.format(_24HourDt);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return time;
+    }
+
+
 }
