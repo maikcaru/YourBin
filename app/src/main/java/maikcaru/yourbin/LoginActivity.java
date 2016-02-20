@@ -134,11 +134,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                                         String name = null;
                                         String email = null;
+                                        String id = null;
                                         try {
+                                            Log.e("Response: ", response + "");
                                             name = response.getJSONObject().getString("name");
                                             email = response.getJSONObject().getString("email");
+                                            id = response.getJSONObject().getString("id");
 
                                             prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
+                                            prefs.edit().putString("id", id).apply();
                                             prefs.edit().putString("name", name).apply();
                                             prefs.edit().putString("email", email).apply();
 
@@ -178,6 +182,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
+
 
     public boolean isLoggedIn() {
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
@@ -468,6 +473,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
             return "false";
         }
+
     }
 }
 

@@ -3,6 +3,11 @@ package maikcaru.yourbin;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -10,9 +15,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * Created by michael.carr on 09/02/16.
@@ -40,14 +50,50 @@ public class NavigationDrawerParent extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         SharedPreferences prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
-        TextView tvName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.UserName);
+        TextView tvName = (TextView) navigationView.getHeaderView(0).findViewById(R.id.tvUserName);
         tvName.setText(prefs.getString("name", "YourName"));
 
-        TextView tvEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.UserEmail);
+        TextView tvEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.tvUserEmail);
         tvEmail.setText(prefs.getString("email", "YourEmail"));
 
+        String id = prefs.getString("id", "noID");
+        Log.e("ID", id);
+        ImageURLGetter imageURLGetter = new ImageURLGetter("https://graph.facebook.com/" + id + "/picture?type=large");
+        imageURLGetter.execute();
 
     }
+
+    private class ImageURLGetter extends AsyncTask<Void, Long, Bitmap>{
+
+        String URL;
+
+        ImageURLGetter(String url){
+            this.URL = url;
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... arg0) {
+            Bitmap bitmap = null;
+            try {
+                URL imageURL = new URL(URL);
+                bitmap = BitmapFactory.decodeStream(imageURL.openConnection().getInputStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return bitmap;
+        }
+        @Override
+        protected void onPostExecute(Bitmap bitmap){
+            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+            ImageView imageView = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.imageViewProfilePicture);
+
+            Drawable drawable = new BitmapDrawable(getResources(), bitmap);
+            imageView.setImageDrawable(drawable);
+        }
+    }
+
+
 
     @Override
     public void onBackPressed() {
