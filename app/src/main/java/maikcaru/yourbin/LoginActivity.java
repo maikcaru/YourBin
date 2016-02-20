@@ -30,6 +30,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -63,34 +64,32 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     //Id to identity READ_CONTACTS permission request.
 
     private static final int REQUEST_READ_CONTACTS = 0;
-    private BufferedReader in = null;
-    private URL myURL = null;
+    CallbackManager callbackManager;
+    SharedPreferences prefs;
 
 
     //Keep track of the login task to ensure we can cancel it if requested.
-
+    private BufferedReader in = null;
+    private URL myURL = null;
     private UserLoginTask mAuthTask = null;
-
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
 
-    CallbackManager callbackManager;
-    SharedPreferences prefs;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(this.getApplicationContext());
         setContentView(R.layout.activity_login);
-
+        prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
         if (isLoggedIn()) {
             Intent intent = new Intent(LoginActivity.this, BinStatus.class);
+            Toast.makeText(LoginActivity.this, "Logged in as: " + prefs.getString("name", "null"), Toast.LENGTH_SHORT).show();
             startActivity(intent);
+            finish();
         }
-
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -136,12 +135,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                         String email = null;
                                         String id = null;
                                         try {
-                                            Log.e("Response: ", response + "");
                                             name = response.getJSONObject().getString("name");
                                             email = response.getJSONObject().getString("email");
                                             id = response.getJSONObject().getString("id");
 
-                                            prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
                                             prefs.edit().putString("id", id).apply();
                                             prefs.edit().putString("name", name).apply();
                                             prefs.edit().putString("email", email).apply();
@@ -149,13 +146,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                         } catch (JSONException e) {
                                             e.printStackTrace();
                                         }
-
+                                        Toast.makeText(LoginActivity.this, "Logged in as: " + name, Toast.LENGTH_SHORT).show();
                                         Intent intent = new Intent(LoginActivity.this, BinStatus.class);
                                         startActivity(intent);
                                         finish();
                                     }
                                 }
-
                         );
                         Bundle parameters = new Bundle();
                         parameters.putString("fields", "name,email");

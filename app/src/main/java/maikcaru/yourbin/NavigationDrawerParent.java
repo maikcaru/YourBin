@@ -23,6 +23,8 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.facebook.FacebookSdk;
+
 import java.io.IOException;
 import java.net.URL;
 
@@ -39,6 +41,7 @@ public abstract class NavigationDrawerParent extends AppCompatActivity
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        FacebookSdk.sdkInitialize(this.getApplicationContext());
         Log.e("On create", "being called");
 
         IntentFilter intentFilter = new IntentFilter();
@@ -74,38 +77,6 @@ public abstract class NavigationDrawerParent extends AppCompatActivity
         imageURLGetter.execute();
 
     }
-
-    private class ImageURLGetter extends AsyncTask<Void, Long, Bitmap>{
-
-        String URL;
-
-        ImageURLGetter(String url){
-            this.URL = url;
-        }
-
-        @Override
-        protected Bitmap doInBackground(Void... arg0) {
-            Bitmap bitmap = null;
-            try {
-                URL imageURL = new URL(URL);
-                bitmap = BitmapFactory.decodeStream(imageURL.openConnection().getInputStream());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return bitmap;
-        }
-        @Override
-        protected void onPostExecute(Bitmap bitmap){
-            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-            ImageView imageView = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.imageViewProfilePicture);
-
-            Drawable drawable = new BitmapDrawable(getResources(), bitmap);
-            imageView.setImageDrawable(drawable);
-        }
-    }
-
-
 
     @Override
     public void onBackPressed() {
@@ -159,5 +130,36 @@ public abstract class NavigationDrawerParent extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private class ImageURLGetter extends AsyncTask<Void, Long, Bitmap> {
+
+        String URL;
+
+        ImageURLGetter(String url) {
+            this.URL = url;
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... arg0) {
+            Bitmap bitmap = null;
+            try {
+                URL imageURL = new URL(URL);
+                bitmap = BitmapFactory.decodeStream(imageURL.openConnection().getInputStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return bitmap;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+            ImageView imageView = (ImageView) navigationView.getHeaderView(0).findViewById(R.id.imageViewProfilePicture);
+
+            Drawable drawable = new BitmapDrawable(getResources(), bitmap);
+            imageView.setImageDrawable(drawable);
+        }
     }
 }
