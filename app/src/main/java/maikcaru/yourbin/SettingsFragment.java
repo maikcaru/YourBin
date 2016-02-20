@@ -23,6 +23,11 @@ public class SettingsFragment extends PreferenceFragment {
             public boolean onPreferenceClick(Preference preference) {
 
                 LoginManager.getInstance().logOut();
+
+                Intent broadcastIntent = new Intent();
+                broadcastIntent.setAction("com.package.ACTION_LOGOUT");
+                getActivity().sendBroadcast(broadcastIntent);
+
                 Intent intent = new Intent(getActivity(), LoginActivity.class);
                 startActivity(intent);
                 return true;

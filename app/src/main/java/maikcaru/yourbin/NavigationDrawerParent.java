@@ -1,7 +1,9 @@
 package maikcaru.yourbin;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -40,6 +42,19 @@ public class NavigationDrawerParent extends AppCompatActivity
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        Log.e("On create", "being called");
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("com.package.ACTION_LOGOUT");
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d("onReceive", "Logout in progress");
+                //At this point you should start the login activity and finish this one
+                unregisterReceiver(this);
+                finish();
+            }
+        }, intentFilter);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -130,15 +145,13 @@ public class NavigationDrawerParent extends AppCompatActivity
 
         if (id == R.id.nav_status) {
             Intent intent = new Intent(this, BinStatus.class);
-            //intent.putExtras(getIntent().getExtras());
+
             startActivity(intent);
         } else if (id == R.id.nav_schedule) {
             Intent intent = new Intent(this, BinScheduler.class);
-            //intent.putExtras(getIntent().getExtras());
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
-            //intent.putExtras(getIntent().getExtras());
             startActivity(intent);
         } else if (id == R.id.nav_help) {
 
