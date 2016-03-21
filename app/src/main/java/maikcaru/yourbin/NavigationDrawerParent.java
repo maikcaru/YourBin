@@ -150,6 +150,7 @@ public abstract class NavigationDrawerParent extends AppCompatActivity
                 e.printStackTrace();
             }
 
+            Log.e("Test", "Out of ImageURLGetter");
             return bitmap;
         }
 

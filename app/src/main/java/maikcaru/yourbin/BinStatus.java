@@ -7,13 +7,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Animatable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v7.app.NotificationCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Calendar;
 
 public class BinStatus extends NavigationDrawerParent {
@@ -66,7 +76,8 @@ public class BinStatus extends NavigationDrawerParent {
             @Override
             public void onClick(View v) {
                 ((Animatable) vectorImage.getDrawable()).start();
-
+                Refresh refresh = new Refresh();
+                refresh.execute();
             }
         });
 
@@ -82,5 +93,54 @@ public class BinStatus extends NavigationDrawerParent {
         return notification;
     }
 
+
+    public class Refresh extends AsyncTask<Void, Void, String> {
+
+
+        @Override
+        protected String doInBackground(Void... params) {
+            try {
+                URL url = new URL("https://graph-eu01-euwest1.api.smartthings.com/api/smartapps/installations/eb482c79-1131-4b39-874e-0730a9ce1e43/refresh");
+                //   URL url = new URL("http://10.0.0.15:8080/");
+                HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
+
+                httpCon.setDoInput(true);
+                httpCon.setRequestMethod("GET");
+                httpCon.setRequestProperty("Authorization", "Bearer 2b68e2e7-9295-4ffb-ade7-569b4347687d");
+
+
+                int status = httpCon.getResponseCode();
+
+                switch (status) {
+                    case 200:
+                    case 201:
+                        BufferedReader br = new BufferedReader(new InputStreamReader(httpCon.getInputStream()));
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line + "\n");
+                        }
+                        br.close();
+                        return sb.toString();
+                }
+            } catch (IOException ioE) {
+                Log.e("Exception", ioE.toString());
+            }
+            return "";
+        }
+
+        @Override
+        protected void onPostExecute(String data) {
+            try {
+                JSONObject jsonObject = new JSONObject(data);
+                Log.e("Fill Level", jsonObject.getInt("fillLevel") + "");
+                Log.e("Location", jsonObject.getString("location"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }
 }
 

@@ -506,6 +506,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         @Override
         protected Boolean doInBackground(Void... params) {
+            Log.e("test", "starting UserLoginTask");
             String inputLine;
 
             try {
@@ -526,14 +527,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 inputLine = in.readLine();
                 if (inputLine.equals("correct")) {
                     mName = in.readLine();
+                    Log.e("test", "out of UserLoginTask");
                     return true;
                 } else if (inputLine.equals("incorrect")) {
+                    Log.e("test", "out of UserLoginTask");
                     return false;
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            Log.e("test", "out of UserLoginTask");
             return false;
         }
 
@@ -578,6 +582,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected Boolean doInBackground(Void... params) {
             String inputLine;
+            Log.e("test", "starting UserRegisterTask");
 
             try {
                 myURL = new URL("http://cs-web.yorksj.ac.uk/~michael.carr/Project/register.php" + "?Email=" + mEmail + "&Password=" + computeMD5Hash(mPassword) + "&Name=" + name);
