@@ -20,7 +20,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -29,6 +28,21 @@ import java.util.Calendar;
 public class BinStatus extends NavigationDrawerParent {
 
     private ImageView vectorImage;
+    private Integer fillLevel = 0;
+    private String location;
+    private Integer fillPercentage;
+    int animations[] = {
+            R.drawable.bin_animated_10,
+            R.drawable.bin_animated_20,
+            R.drawable.bin_animated_30,
+            R.drawable.bin_animated_40,
+            R.drawable.bin_animated_50,
+            R.drawable.bin_animated_60,
+            R.drawable.bin_animated_70,
+            R.drawable.bin_animated_80,
+            R.drawable.bin_animated_90,
+            R.drawable.bin_animated
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,22 +79,27 @@ public class BinStatus extends NavigationDrawerParent {
         vectorImage = (ImageView) findViewById(R.id.bin);
 
         //Hard-coded to 70%, needs to be sourced from hub
-        vectorImage.setImageResource(R.drawable.bin_animated_70);
-        ((Animatable) vectorImage.getDrawable()).start();
-        TextView textViewFillLevel = (TextView) findViewById(R.id.textFillLevel);
-        String[] fillLevels = getResources().getStringArray(R.array.fill_array);
-        textViewFillLevel.setText(fillLevels[6]);
+        new Refresh().execute();
 
         //Animate on click
         vectorImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((Animatable) vectorImage.getDrawable()).start();
-                Refresh refresh = new Refresh();
-                refresh.execute();
+                new Refresh().execute();
             }
         });
 
+    }
+
+    private Integer getPercentage() {
+        if (fillLevel > 108) {
+            fillLevel = 108;
+        }
+        Double fillPerc;
+        fillPerc = ((double) fillLevel / 108) * 100;
+        fillPerc = Math.round((fillPerc) / 10.0) * 10.0;
+        fillPercentage = fillPerc.intValue();
+        return fillPercentage;
     }
 
     private Notification buildNotification() {
@@ -93,21 +112,31 @@ public class BinStatus extends NavigationDrawerParent {
         return notification;
     }
 
+    private void updateUI() {
+        Log.e("Animations index", ((fillPercentage / 10)) + "");
+        int index = (fillPercentage / 10);
+        if (index == 10) {
+            index--;
+        }
+        vectorImage.setImageResource(animations[index]);
+        ((Animatable) vectorImage.getDrawable()).start();
+        TextView textViewFillLevel = (TextView) findViewById(R.id.textFillLevel);
+        String[] fillLevels = getResources().getStringArray(R.array.fill_array);
+        textViewFillLevel.setText(fillLevels[index]);
 
-    public class Refresh extends AsyncTask<Void, Void, String> {
+    }
 
+    public class Refresh extends AsyncTask<Void, Void, JSONObject> {
 
-        @Override
-        protected String doInBackground(Void... params) {
+        JSONObject sendREST(String RESTCommand) {
             try {
-                URL url = new URL("https://graph-eu01-euwest1.api.smartthings.com/api/smartapps/installations/eb482c79-1131-4b39-874e-0730a9ce1e43/refresh");
+                URL url = new URL("https://graph-eu01-euwest1.api.smartthings.com/api/smartapps/installations/eb482c79-1131-4b39-874e-0730a9ce1e43/" + RESTCommand);
                 //   URL url = new URL("http://10.0.0.15:8080/");
                 HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
 
                 httpCon.setDoInput(true);
                 httpCon.setRequestMethod("GET");
                 httpCon.setRequestProperty("Authorization", "Bearer 2b68e2e7-9295-4ffb-ade7-569b4347687d");
-
 
                 int status = httpCon.getResponseCode();
 
@@ -121,26 +150,43 @@ public class BinStatus extends NavigationDrawerParent {
                             sb.append(line + "\n");
                         }
                         br.close();
-                        return sb.toString();
+                        return new JSONObject(sb.toString());
                 }
-            } catch (IOException ioE) {
+            } catch (Exception ioE) {
                 Log.e("Exception", ioE.toString());
             }
-            return "";
+            return null;
+        }
+
+
+        @Override
+        protected JSONObject doInBackground(Void... params) {
+            sendREST("refresh");
+            JSONObject response = sendREST("read");
+            while (response == null || response.isNull("fillLevel")) {
+                response = sendREST("read");
+            }
+            return response;
         }
 
         @Override
-        protected void onPostExecute(String data) {
+        protected void onPostExecute(JSONObject data) {
             try {
-                JSONObject jsonObject = new JSONObject(data);
-                Log.e("Fill Level", jsonObject.getInt("fillLevel") + "");
-                Log.e("Location", jsonObject.getString("location"));
+
+                fillLevel = data.getInt("fillLevel");
+                location = data.getString("location");
+                Log.e("Fill Level", fillLevel.toString());
+                Log.e("Location", location);
+                Log.e("Fill Percentage", getPercentage().toString());
+                updateUI();
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
 
-
     }
+
+
 }
 
