@@ -5,4 +5,7 @@
         android:key="logout"
         android:title="Logout" />
 
+    <EditTextPreference
+        android:key="binHeight"
+        android:title="Bin Height (cm)" />
 </PreferenceScreen>

@@ -10,6 +10,7 @@ import android.graphics.drawable.Animatable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
@@ -23,14 +24,14 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class BinStatus extends NavigationDrawerParent {
 
-    private ImageView vectorImage;
-    private Integer fillLevel = 0;
-    private String location;
-    private Integer fillPercentage;
     int animations[] = {
             R.drawable.bin_animated_10,
             R.drawable.bin_animated_20,
@@ -43,6 +44,10 @@ public class BinStatus extends NavigationDrawerParent {
             R.drawable.bin_animated_90,
             R.drawable.bin_animated
     };
+    private ImageView vectorImage;
+    private Integer fillLevel = 0;
+    private String location;
+    private Integer fillPercentage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +61,8 @@ public class BinStatus extends NavigationDrawerParent {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         long futureInMillis = SystemClock.elapsedRealtime() + 2000;
+
+
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
 
@@ -75,10 +82,30 @@ public class BinStatus extends NavigationDrawerParent {
         SharedPreferences prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
         collectionArrow.setDayOfWeek(prefs.getInt("dayOfWeek", 0));
 
+
+        Log.e("Frequency", "" + prefs.getInt("frequency", 3));
+        Log.e("Day of Week", "" + prefs.getInt("dayOfWeek", -1));
+        Log.e("Time", "" + prefs.getInt("hour", 22) + ":" + prefs.getInt("minute", 00));
+
+
+        DateFormat format = new SimpleDateFormat("kkmm", Locale.UK);
+
+        String hour = Integer.toString(prefs.getInt("hour", 22) + 1);
+        String minute = Integer.toString(prefs.getInt("minute", 00));
+        Log.e("Hour", hour);
+        Log.e("Minute", minute);
+
+        long millis = 0;
+        try {
+            millis = format.parse(hour + minute).getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            Log.e("Parse execption", e.toString());
+        }
+        Log.e("Milliseconds", "" + millis);
         //Animate the bin
         vectorImage = (ImageView) findViewById(R.id.bin);
-
-        //Hard-coded to 70%, needs to be sourced from hub
+        // Request initial data from the hub.
         new Refresh().execute();
 
         //Animate on click
@@ -96,7 +123,10 @@ public class BinStatus extends NavigationDrawerParent {
             fillLevel = 108;
         }
         Double fillPerc;
-        fillPerc = ((double) fillLevel / 108) * 100;
+        // Get bin height from preferences file, defaults to standard height of a household bin of 108 cm
+        Integer binHeight = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString("binHeight", "108"));
+        Log.e("Bin Height is", binHeight + "");
+        fillPerc = ((double) fillLevel / binHeight) * 100;
         fillPerc = Math.round((fillPerc) / 10.0) * 10.0;
         fillPercentage = fillPerc.intValue();
         return fillPercentage;

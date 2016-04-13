@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -108,6 +107,24 @@ public class BinScheduler extends NavigationDrawerParent {
 
     }
 
+    public String get12HourTime(String time) {
+
+        if (!DateFormat.is24HourFormat(this)) {
+            try {
+                SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
+                // Log.e("24 SDF", _24HourSDF.toLocalizedPattern());
+                SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
+                // Log.e("12 SDF", _12HourSDF.toLocalizedPattern());
+                Date _24HourDt = _24HourSDF.parse(time);
+                // Log.e("24 DT", _24HourDt.toString());
+                time = _12HourSDF.format(_24HourDt);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return time;
+    }
 
     public class TimePickerFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
 
@@ -137,25 +154,6 @@ public class BinScheduler extends NavigationDrawerParent {
             tvReminderTime.setText(time);
         }
 
-    }
-
-    public String get12HourTime(String time) {
-
-        if (!DateFormat.is24HourFormat(this)) {
-            try {
-                SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
-                Log.e("24 SDF", _24HourSDF.toLocalizedPattern());
-                SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a", Locale.ENGLISH);
-                Log.e("12 SDF", _12HourSDF.toLocalizedPattern());
-                Date _24HourDt = _24HourSDF.parse(time);
-                Log.e("24 DT", _24HourDt.toString());
-                time = _12HourSDF.format(_24HourDt);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return time;
     }
 
 

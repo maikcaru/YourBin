@@ -42,7 +42,6 @@ public abstract class NavigationDrawerParent extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FacebookSdk.sdkInitialize(this.getApplicationContext());
-        Log.e("On create", "being called");
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("com.package.ACTION_LOGOUT");
@@ -72,7 +71,7 @@ public abstract class NavigationDrawerParent extends AppCompatActivity
         tvEmail.setText(prefs.getString("email", "YourEmail"));
 
         String id = prefs.getString("id", "noID");
-        Log.e("ID", id);
+
         ImageURLGetter imageURLGetter = new ImageURLGetter("https://graph.facebook.com/" + id + "/picture?type=large");
         imageURLGetter.execute();
 
