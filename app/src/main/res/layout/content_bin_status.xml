@@ -74,7 +74,7 @@
                 android:layout_marginTop="100dp"
                 android:gravity="center_horizontal"
 
-                android:text="70% Full"
+                android:text="No data"
                 android:textColor="@color/black"
                 android:textSize="@dimen/large_text" />
 

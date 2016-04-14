@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Animatable;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -103,6 +104,22 @@ public class BinStatus extends NavigationDrawerParent {
             Log.e("Parse execption", e.toString());
         }
         Log.e("Milliseconds", "" + millis);
+        location = "53.966142,-1.081178";
+        double centerLatitude = 53.966156;
+        double centerLongitude = -1.081234;
+
+        String[] locationLatLng = location.split(",");
+        double testLatitude = Double.parseDouble(locationLatLng[0]);
+        double testLongitude = Double.parseDouble(locationLatLng[1]);
+
+
+        float[] results = new float[1];
+        Location.distanceBetween(centerLatitude, centerLongitude, testLatitude, testLongitude, results);
+        float distanceInMeters = results[0];
+        boolean isWithin5m = distanceInMeters < 5;
+        Log.e("Is with in 5m", "" + isWithin5m);
+
+
         //Animate the bin
         vectorImage = (ImageView) findViewById(R.id.bin);
         // Request initial data from the hub.
@@ -144,7 +161,7 @@ public class BinStatus extends NavigationDrawerParent {
 
     private void updateUI() {
         Log.e("Animations index", ((fillPercentage / 10)) + "");
-        int index = (fillPercentage / 10);
+        int index = 10 - (fillPercentage / 10);
         if (index == 10) {
             index--;
         }
@@ -154,13 +171,29 @@ public class BinStatus extends NavigationDrawerParent {
         String[] fillLevels = getResources().getStringArray(R.array.fill_array);
         textViewFillLevel.setText(fillLevels[index]);
 
+        double centerLatitude = 53.966156;
+        double centerLongitude = -1.081234;
+
+        String[] locationLatLng = location.split(",");
+        double testLatitude = Double.parseDouble(locationLatLng[0]);
+        double testLongitude = Double.parseDouble(locationLatLng[1]);
+
+
+        float[] results = new float[1];
+        Location.distanceBetween(centerLatitude, centerLongitude, testLatitude, testLongitude, results);
+        float distanceInMeters = results[0];
+        boolean isWithin5m = distanceInMeters < 5;
+        Log.e("Is with in 5m", "" + isWithin5m);
+
+
+
     }
 
     public class Refresh extends AsyncTask<Void, Void, JSONObject> {
 
         JSONObject sendREST(String RESTCommand) {
             try {
-                URL url = new URL("https://graph-eu01-euwest1.api.smartthings.com/api/smartapps/installations/eb482c79-1131-4b39-874e-0730a9ce1e43/" + RESTCommand);
+                URL url = new URL("https://graph-eu01-euwest1.api.smartthings.com/api/smartapps/installations/fabb7fac-0ba3-40a5-a4dd-ce21ddac84b1/" + RESTCommand);
                 //   URL url = new URL("http://10.0.0.15:8080/");
                 HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
 
@@ -194,6 +227,11 @@ public class BinStatus extends NavigationDrawerParent {
             sendREST("refresh");
             JSONObject response = sendREST("read");
             while (response == null || response.isNull("fillLevel")) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 response = sendREST("read");
             }
             return response;
