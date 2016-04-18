@@ -25,11 +25,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Locale;
+import java.util.Date;
 
 public class BinStatus extends NavigationDrawerParent {
 
@@ -69,15 +66,15 @@ public class BinStatus extends NavigationDrawerParent {
 
 
         ArrowView todayArrow = (ArrowView) findViewById(R.id.todayArrow);
-        int dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+        int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
 
         //Convert Android day of week numbering convention to my own
-        if (dayOfWeek > 1) {
-            dayOfWeek -= 2;
+        if (currentDay > 1) {
+            currentDay -= 2;
         } else {
-            dayOfWeek += 5;
+            currentDay += 5;
         }
-        todayArrow.setDayOfWeek(dayOfWeek);
+        todayArrow.setDayOfWeek(currentDay);
 
         ArrowView collectionArrow = (ArrowView) findViewById(R.id.collectionArrow);
         SharedPreferences prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
@@ -87,24 +84,32 @@ public class BinStatus extends NavigationDrawerParent {
         Log.e("Frequency", "" + prefs.getInt("frequency", 3));
         Log.e("Day of Week", "" + prefs.getInt("dayOfWeek", -1));
         Log.e("Time", "" + prefs.getInt("hour", 22) + ":" + prefs.getInt("minute", 00));
+        int hour = prefs.getInt("hour", 22);
+        int minute = prefs.getInt("minute", 00);
+        int dayOfWeek = prefs.getInt("dayOfWeek", -1);
 
+        Log.e("My day of week", "" + dayOfWeek);
+        dayOfWeek = ((dayOfWeek + 1) % 7) + 1;
+        Log.e("Android day of week", "" + dayOfWeek);
 
-        DateFormat format = new SimpleDateFormat("kkmm", Locale.UK);
-
-        String hour = Integer.toString(prefs.getInt("hour", 22) + 1);
-        String minute = Integer.toString(prefs.getInt("minute", 00));
-        Log.e("Hour", hour);
-        Log.e("Minute", minute);
-
-        long millis = 0;
-        try {
-            millis = format.parse(hour + minute).getTime();
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Log.e("Parse execption", e.toString());
+        Calendar now = Calendar.getInstance();
+        int today = now.get(Calendar.DAY_OF_WEEK);
+        if (today != dayOfWeek) {
+            Log.e("Gone into", "if statement");
+            // calculate how much the difference between today and set day of week
+            int days = (dayOfWeek - today) % 7;
+            Log.e("Days ", "" + days);
+            now.add(Calendar.DAY_OF_YEAR, days);
         }
-        Log.e("Milliseconds", "" + millis);
+        now.set(Calendar.HOUR_OF_DAY, hour);
+        now.set(Calendar.MINUTE, minute);
+
+        Date date = now.getTime();
+
+        Log.e("Milliseconds", "" + date.getTime());
+
         location = "53.966142,-1.081178";
+
         double centerLatitude = 53.966156;
         double centerLongitude = -1.081234;
 
@@ -123,7 +128,7 @@ public class BinStatus extends NavigationDrawerParent {
         //Animate the bin
         vectorImage = (ImageView) findViewById(R.id.bin);
         // Request initial data from the hub.
-        new Refresh().execute();
+        // new Refresh().execute();
 
         //Animate on click
         vectorImage.setOnClickListener(new View.OnClickListener() {
