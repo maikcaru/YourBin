@@ -8,4 +8,12 @@
     <EditTextPreference
         android:key="binHeight"
         android:title="Bin Height (cm)" />
+
+    <EditTextPreference
+        android:key="storageLocation"
+        android:title="Storage Location (Lat, Lng)" />
+
+    <EditTextPreference
+        android:key="collectionLocation"
+        android:title="Collection Location(Lat, Lng)" />
 </PreferenceScreen>

@@ -17,6 +17,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,6 +49,12 @@ public class BinStatus extends NavigationDrawerParent {
     private Integer fillLevel = 0;
     private String location;
     private Integer fillPercentage;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +73,6 @@ public class BinStatus extends NavigationDrawerParent {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
 
-
         ArrowView todayArrow = (ArrowView) findViewById(R.id.todayArrow);
         int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
 
@@ -80,64 +88,40 @@ public class BinStatus extends NavigationDrawerParent {
         SharedPreferences prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
         collectionArrow.setDayOfWeek(prefs.getInt("dayOfWeek", 0));
 
-
-        Log.e("Frequency", "" + prefs.getInt("frequency", 3));
-        Log.e("Day of Week", "" + prefs.getInt("dayOfWeek", -1));
-        Log.e("Time", "" + prefs.getInt("hour", 22) + ":" + prefs.getInt("minute", 00));
         int hour = prefs.getInt("hour", 22);
         int minute = prefs.getInt("minute", 00);
         int dayOfWeek = prefs.getInt("dayOfWeek", -1);
 
-        Log.e("My day of week", "" + dayOfWeek);
         dayOfWeek = ((dayOfWeek + 1) % 7) + 1;
-        Log.e("Android day of week", "" + dayOfWeek);
 
         Calendar now = Calendar.getInstance();
         int today = now.get(Calendar.DAY_OF_WEEK);
         if (today != dayOfWeek) {
-            Log.e("Gone into", "if statement");
             // calculate how much the difference between today and set day of week
             int days = (dayOfWeek - today) % 7;
-            Log.e("Days ", "" + days);
             now.add(Calendar.DAY_OF_YEAR, days);
         }
         now.set(Calendar.HOUR_OF_DAY, hour);
         now.set(Calendar.MINUTE, minute);
 
         Date date = now.getTime();
-
-        Log.e("Milliseconds", "" + date.getTime());
-
-        location = "53.966142,-1.081178";
-
-        double centerLatitude = 53.966156;
-        double centerLongitude = -1.081234;
-
-        String[] locationLatLng = location.split(",");
-        double testLatitude = Double.parseDouble(locationLatLng[0]);
-        double testLongitude = Double.parseDouble(locationLatLng[1]);
-
-
-        float[] results = new float[1];
-        Location.distanceBetween(centerLatitude, centerLongitude, testLatitude, testLongitude, results);
-        float distanceInMeters = results[0];
-        boolean isWithin5m = distanceInMeters < 5;
-        Log.e("Is with in 5m", "" + isWithin5m);
-
+        double notificationTime = date.getTime();
 
         //Animate the bin
         vectorImage = (ImageView) findViewById(R.id.bin);
         // Request initial data from the hub.
-        // new Refresh().execute();
+        new Refresh().execute();
 
         //Animate on click
         vectorImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 new Refresh().execute();
+                Toast toast = Toast.makeText(BinStatus.this, "Retrieving data", Toast.LENGTH_SHORT);
+                toast.show();
             }
         });
-
     }
 
     private Integer getPercentage() {
@@ -155,13 +139,12 @@ public class BinStatus extends NavigationDrawerParent {
     }
 
     private Notification buildNotification() {
-        Notification notification = new NotificationCompat.Builder(BinStatus.this)
+        return new NotificationCompat.Builder(this)
                 .setContentTitle("YourBin Reminder")
                 .setContentText("Move YourBin to it's collection point. ")
                 .setSmallIcon(R.drawable.bin_clipart_vector)
-                .setContentIntent(PendingIntent.getActivity(BinStatus.this, 0, new Intent(BinStatus.this, BinStatus.class), 0))
+                .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, BinStatus.class), 0))
                 .build();
-        return notification;
     }
 
     private void updateUI() {
@@ -176,29 +159,52 @@ public class BinStatus extends NavigationDrawerParent {
         String[] fillLevels = getResources().getStringArray(R.array.fill_array);
         textViewFillLevel.setText(fillLevels[index]);
 
-        double centerLatitude = 53.966156;
-        double centerLongitude = -1.081234;
+        LatLng binLocation = splitGPS(location);
+        LatLng collectionLatLng = splitGPS(PreferenceManager.getDefaultSharedPreferences(this).getString("collectionLocation", "0,0"));
+        LatLng storageLatLng = splitGPS(PreferenceManager.getDefaultSharedPreferences(this).getString("storageLocation", "0,0"));
 
-        String[] locationLatLng = location.split(",");
-        double testLatitude = Double.parseDouble(locationLatLng[0]);
-        double testLongitude = Double.parseDouble(locationLatLng[1]);
+        TextView binLocationIs = (TextView) findViewById(R.id.binLocationIs);
 
-
-        float[] results = new float[1];
-        Location.distanceBetween(centerLatitude, centerLongitude, testLatitude, testLongitude, results);
-        float distanceInMeters = results[0];
-        boolean isWithin5m = distanceInMeters < 5;
-        Log.e("Is with in 5m", "" + isWithin5m);
-
-
+        if (withIn5m(collectionLatLng, binLocation)) {
+            binLocationIs.setText("Bin Location Is: Collection Location");
+        } else if (!withIn5m(storageLatLng, binLocation)) {
+            binLocationIs.setText("Bin Location Is: Storage Location");
+        } else {
+            binLocationIs.setText("Bin Location Is Not Known:" + binLocation.toString());
+        }
 
     }
+
+    public boolean withIn5m(LatLng testLocation, LatLng binLocation) {
+
+        float[] results = new float[1];
+        Location.distanceBetween(testLocation.latitude, testLocation.longitude, binLocation.latitude, binLocation.longitude, results);
+        float distanceInMeters = results[0];
+        boolean status = distanceInMeters < 5;
+        Log.e("With in 5m", "" + status);
+        return status;
+    }
+
+
+    public LatLng splitGPS(String testLocation) {
+        LatLng locationLatLng = new LatLng();
+        String[] locationStringSplit = location.split(",");
+        try {
+            locationLatLng.latitude = Double.parseDouble(locationStringSplit[0]);
+            locationLatLng.longitude = Double.parseDouble(locationStringSplit[1]);
+        } catch (NumberFormatException nfe) {
+            Log.e("No location", "found");
+        }
+
+        return locationLatLng;
+    }
+
 
     public class Refresh extends AsyncTask<Void, Void, JSONObject> {
 
         JSONObject sendREST(String RESTCommand) {
             try {
-                URL url = new URL("https://graph-eu01-euwest1.api.smartthings.com/api/smartapps/installations/fabb7fac-0ba3-40a5-a4dd-ce21ddac84b1/" + RESTCommand);
+                URL url = new URL("https://graph-eu01-euwest1.api.smartthings.com/api/smartapps/installations/393e6424-7bcc-428a-99d4-dbdb3a3cbaff/" + RESTCommand);
                 //   URL url = new URL("http://10.0.0.15:8080/");
                 HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
 
@@ -226,14 +232,14 @@ public class BinStatus extends NavigationDrawerParent {
             return null;
         }
 
-
         @Override
         protected JSONObject doInBackground(Void... params) {
+
             sendREST("refresh");
             JSONObject response = sendREST("read");
             while (response == null || response.isNull("fillLevel")) {
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(2000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -245,7 +251,6 @@ public class BinStatus extends NavigationDrawerParent {
         @Override
         protected void onPostExecute(JSONObject data) {
             try {
-
                 fillLevel = data.getInt("fillLevel");
                 location = data.getString("location");
                 Log.e("Fill Level", fillLevel.toString());

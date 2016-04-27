@@ -73,17 +73,17 @@
                 android:layout_centerInParent="true"
                 android:layout_marginTop="100dp"
                 android:gravity="center_horizontal"
-
                 android:text="No data"
                 android:textColor="@color/black"
                 android:textSize="@dimen/large_text" />
 
             <TextView
+                android:id="@+id/binLocationIs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/bin"
                 android:layout_centerHorizontal="true"
-                android:text="Last location: Storage point at 12:14 pm " />
+                android:text="No Location" />
         </RelativeLayout>
 
 
