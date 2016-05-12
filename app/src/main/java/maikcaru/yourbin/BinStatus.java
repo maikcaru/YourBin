@@ -10,7 +10,6 @@ import android.graphics.drawable.Animatable;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
@@ -18,8 +17,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,29 +46,18 @@ public class BinStatus extends NavigationDrawerParent {
     private Integer fillLevel = 0;
     private String location;
     private Integer fillPercentage;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
-
+    private SharedPreferences prefs;
+    private long lastUpdateTime;
+    private final int REQUEST_TIMEOUT = 70;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bin_status);
         createToolbar();
+        prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
+        buildIntent();
 
-        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, buildNotification());
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        long futureInMillis = SystemClock.elapsedRealtime() + 2000;
-
-
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
 
         ArrowView todayArrow = (ArrowView) findViewById(R.id.todayArrow);
         int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
@@ -85,8 +71,41 @@ public class BinStatus extends NavigationDrawerParent {
         todayArrow.setDayOfWeek(currentDay);
 
         ArrowView collectionArrow = (ArrowView) findViewById(R.id.collectionArrow);
-        SharedPreferences prefs = getSharedPreferences("maikcaru.yourbin", Context.MODE_PRIVATE);
         collectionArrow.setDayOfWeek(prefs.getInt("dayOfWeek", 0));
+
+        //Animate the bin
+        vectorImage = (ImageView) findViewById(R.id.bin);
+        // Request initial data from the hub.
+        new Refresh().execute();
+        Toast toast = Toast.makeText(BinStatus.this, "Retrieving data.....", Toast.LENGTH_SHORT);
+        toast.show();
+
+        //Animate on click
+        vectorImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (System.currentTimeMillis() > lastUpdateTime + (REQUEST_TIMEOUT * 1000)) {
+                    new Refresh().execute();
+                    Toast.makeText(BinStatus.this, "Retrieving data...", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(BinStatus.this, "Update time too soon, please wait " + (lastUpdateTime + REQUEST_TIMEOUT * 1000 - System.currentTimeMillis()) / 1000 + " seconds.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void buildIntent() {
+        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, buildNotification());
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        long notificationTime = getNotificationTime();
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, notificationTime, pendingIntent);
+    }
+
+
+    private long getNotificationTime() {
 
         int hour = prefs.getInt("hour", 22);
         int minute = prefs.getInt("minute", 00);
@@ -105,24 +124,9 @@ public class BinStatus extends NavigationDrawerParent {
         now.set(Calendar.MINUTE, minute);
 
         Date date = now.getTime();
-        double notificationTime = date.getTime();
-
-        //Animate the bin
-        vectorImage = (ImageView) findViewById(R.id.bin);
-        // Request initial data from the hub.
-        new Refresh().execute();
-
-        //Animate on click
-        vectorImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                new Refresh().execute();
-                Toast toast = Toast.makeText(BinStatus.this, "Retrieving data", Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
+        return date.getTime();
     }
+
 
     private Integer getPercentage() {
         if (fillLevel > 108) {
@@ -167,10 +171,10 @@ public class BinStatus extends NavigationDrawerParent {
 
         if (withIn5m(collectionLatLng, binLocation)) {
             binLocationIs.setText("Bin Location Is: Collection Location");
-        } else if (!withIn5m(storageLatLng, binLocation)) {
+        } else if (withIn5m(storageLatLng, binLocation)) {
             binLocationIs.setText("Bin Location Is: Storage Location");
         } else {
-            binLocationIs.setText("Bin Location Is Not Known:" + binLocation.toString());
+            binLocationIs.setText("Bin Location Is Not Known: " + binLocation.toString());
         }
 
     }
@@ -185,10 +189,9 @@ public class BinStatus extends NavigationDrawerParent {
         return status;
     }
 
-
     public LatLng splitGPS(String testLocation) {
         LatLng locationLatLng = new LatLng();
-        String[] locationStringSplit = location.split(",");
+        String[] locationStringSplit = testLocation.split(",");
         try {
             locationLatLng.latitude = Double.parseDouble(locationStringSplit[0]);
             locationLatLng.longitude = Double.parseDouble(locationStringSplit[1]);
@@ -204,8 +207,8 @@ public class BinStatus extends NavigationDrawerParent {
 
         JSONObject sendREST(String RESTCommand) {
             try {
-                URL url = new URL("https://graph-eu01-euwest1.api.smartthings.com/api/smartapps/installations/393e6424-7bcc-428a-99d4-dbdb3a3cbaff/" + RESTCommand);
-                //   URL url = new URL("http://10.0.0.15:8080/");
+                //URL url = new URL("https://graph-eu01-euwest1.api.smartthings.com/api/smartapps/installations/393e6424-7bcc-428a-99d4-dbdb3a3cbaff/" + RESTCommand);
+                URL url = new URL("http://10.0.0.66:8080/");
                 HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
 
                 httpCon.setDoInput(true);
@@ -229,34 +232,30 @@ public class BinStatus extends NavigationDrawerParent {
             } catch (Exception ioE) {
                 Log.e("Exception", ioE.toString());
             }
+            lastUpdateTime = System.currentTimeMillis();
             return null;
         }
 
         @Override
         protected JSONObject doInBackground(Void... params) {
-
-            sendREST("refresh");
-            JSONObject response = sendREST("read");
-            while (response == null || response.isNull("fillLevel")) {
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                response = sendREST("read");
-            }
-            return response;
+            return sendREST("refresh");
         }
 
         @Override
         protected void onPostExecute(JSONObject data) {
             try {
-                fillLevel = data.getInt("fillLevel");
-                location = data.getString("location");
-                Log.e("Fill Level", fillLevel.toString());
-                Log.e("Location", location);
-                Log.e("Fill Percentage", getPercentage().toString());
-                updateUI();
+                if (data != null) {
+                    fillLevel = data.getInt("fillLevel");
+                    location = data.getString("location");
+                    Log.e("Fill Level", fillLevel.toString());
+                    Log.e("Location", location);
+                    Log.e("Fill Percentage", getPercentage().toString());
+                    updateUI();
+                } else {
+                    Toast toast = Toast.makeText(BinStatus.this, "Could not contact bin.", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+
 
             } catch (JSONException e) {
                 e.printStackTrace();
